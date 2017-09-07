@@ -54,3 +54,4 @@ ymaps.ready(mapInit);
 Option | Default | Description
 ---------|-----------------------|---------
 `text` | `Чтобы переместить карту проведите по ней двумя пальцами` | Touch block's text
+`disableOnFullscreen` | false | Allow touch scroll on fullscreen 

@@ -1,7 +1,16 @@
 import isMobile from 'ismobilejs';
 
 export default function ymapsTouchScroll(map, options = {}) {
-  if (!isMobile || !isMobile.any || !map.behaviors.isEnabled('multiTouch')) return;
+  var fullscreenEntered = map.controls.get('fullscreenControl') && map.controls.get('fullscreenControl').isSelected();
+  var disableOnFullscreen = options.hasOwnProperty('disableOnFullscreen') && options.disableOnFullscreen && fullscreenEntered;
+
+  if (!isMobile || !isMobile.any || disableOnFullscreen || !map.behaviors.isEnabled('multiTouch')) {
+    if (!map.behaviors.isEnabled('drag')) {
+      map.behaviors.enable('drag');
+    }
+
+    return;
+  }
 
   map.behaviors.disable('drag');
 
