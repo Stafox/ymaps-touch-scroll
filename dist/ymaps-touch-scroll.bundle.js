@@ -96,32 +96,26 @@ function ymapsTouchScroll(map) {
 
   var fullscreenEntered = map.controls.get('fullscreenControl') && map.controls.get('fullscreenControl').isSelected();
   var disableOnFullscreen = options.hasOwnProperty('disableOnFullscreen') && options.disableOnFullscreen && fullscreenEntered;
-
-  if (!_ismobilejs2.default || !_ismobilejs2.default.any || disableOnFullscreen || !map.behaviors.isEnabled('multiTouch')) {
-    if (!map.behaviors.isEnabled('drag')) {
-      map.behaviors.enable('drag');
-    }
-
-    return;
-  }
-
-  map.behaviors.disable('drag');
-
-  var parentBlock = map.container.getParentElement();
-
-  if (!getComputedStyle(parentBlock).position) parentBlock.style.position = 'relative';
+  var preventMouseScroll = options.hasOwnProperty('preventMouseScroll') && options.preventMouseScroll;
+  var desktopText = options.hasOwnProperty('desktopText') ? options.desktopText : 'Чтобы изменить масштаб, прокручивайте карту, удерживая клавишу Ctrl';
 
   function createEl(elClass, appendBlock, elStyles) {
     var el = document.createElement('div');
 
     for (var key in elStyles) {
       el.style[key] = elStyles[key];
-    }el.classList.add(elClass);
+    }
 
+    el.classList.add(elClass);
     appendBlock.appendChild(el);
 
     return el;
   }
+
+  var defaultText = 'Чтобы переместить карту проведите по ней двумя пальцами';
+  var parentBlock = map.container.getParentElement();
+
+  if (!getComputedStyle(parentBlock).position) parentBlock.style.position = 'relative';
 
   var mapZIndex = getComputedStyle(map.container.getElement()).zIndex;
 
@@ -145,7 +139,9 @@ function ymapsTouchScroll(map) {
   var mapMargin = map.margin.getMargin();
   for (var i in mapMargin) {
     mapMargin[i] += 20;
-  }var content = createEl('ymaps-touch-scroll-content', block, {
+  }
+
+  var content = createEl('ymaps-touch-scroll-content', block, {
     position: 'absolute',
     top: '50%',
     left: '0',
@@ -159,8 +155,6 @@ function ymapsTouchScroll(map) {
     padding: mapMargin.join('px ') + 'px'
   });
 
-  content.textContent = options.hasOwnProperty('text') ? options.text : 'Чтобы переместить карту проведите по ней двумя пальцами';
-
   function blockToggle() {
     var show = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
@@ -168,13 +162,44 @@ function ymapsTouchScroll(map) {
     bg.style.opacity = show ? '.5' : 0;
   }
 
-  parentBlock.addEventListener('touchmove', function () {
-    return blockToggle();
-  });
+  if ((!_ismobilejs2.default || _ismobilejs2.default && !_ismobilejs2.default.any) && preventMouseScroll) {
+    // Desktop
+    content.textContent = desktopText;
+    map.events.add('wheel', function (e) {
+      if (window.event.ctrlKey === false) {
+        e.preventDefault();
+        blockToggle();
+        setTimeout(function () {
+          blockToggle(false);
+        }, 1500);
+      }
+    });
+  } else {
+    // Mobile
+    if (!_ismobilejs2.default || !_ismobilejs2.default.any || disableOnFullscreen || !map.behaviors.isEnabled('multiTouch')) {
+      if (!map.behaviors.isEnabled('drag')) {
+        map.behaviors.enable('drag');
+      }
 
-  parentBlock.addEventListener('touchend', function () {
-    return blockToggle(false);
-  });
+      return;
+    }
+
+    if (options.hasOwnProperty('text')) {
+      content.textContent = options.text;
+    } else {
+      content.textContent = defaultText;
+    }
+
+    map.behaviors.disable('drag');
+
+    parentBlock.addEventListener('touchmove', function () {
+      return blockToggle();
+    });
+
+    parentBlock.addEventListener('touchend', function () {
+      return blockToggle(false);
+    });
+  }
 }
 module.exports = exports['default'];
 

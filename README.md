@@ -55,3 +55,4 @@ Option | Default | Description
 ---------|-----------------------|---------
 `text` | `Чтобы переместить карту проведите по ней двумя пальцами` | Touch block's text
 `disableOnFullscreen` | false | Allow touch scroll on fullscreen 
+`preventMouseScroll` | false | Allow zoom using mouse wheel with pressed Ctrl key only
